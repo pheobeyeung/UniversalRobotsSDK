@@ -1,29 +1,38 @@
-
-
-# FROM scratch
 FROM universalrobots/ursim_e-series
-# FROM ubuntu:18.04 
-#CMD ["bash"]
-ENV HOME=/sdk-1.14.0
+SHELL ["/bin/bash", "-i", "-c"]
 ENV URTOOL_ROOT=/opt/urtool-3.0 \
     URTOOL_TARGET=i686-unknown-linux-gnu- \
     PATH="${PATH}:/opt/urtool-3.0/bin"
 ENV URSIM=/ursim 
-RUN apt-get -y update \
-&& apt-get -y upgrade \
-&& apt-get install -y nodejs \
-&& apt-get install -y dialog \
-&& apt-get install -y ant \
-&& apt-get install -y unzip \
-&& apt-get install -y maven \
-&& apt-get install -y xdg-utils \
-&& apt-get install -y sshpass \
-&& apt-get install -y git \
-&& apt-get clean \
-&& rm -rf /var/lib/apt/lists/* 
 
-RUN curl https://urplus-developer-site.s3.eu-west-1.amazonaws.com/sdk/sdk-1.14.0.zip -o sdk-1.14.0.zip \
-&& unzip sdk-1.14.0.zip -d /sdk-1.14.0 \
-&& rm sdk-1.14.0.zip \
-&& cd /sdk-1.14.0 \
-&& yes | ./install.sh
+ARG url=https://urplus-developer-site.s3.eu-west-1.amazonaws.com/sdk/sdk-1.14.0.zip
+ARG sdk_version=sdk-1.14.0
+
+RUN set -ex; \
+    apt-get -y update; \
+    apt-get install -y build-essential maven unzip dialog ant sshpass curl git bash; \
+    apt-get clean; \
+    rm -rf /var/lib/apt/lists/* 
+
+ARG USERNAME=ur-dev
+ARG USER_UID=1001
+ARG USER_GID=$USER_UID
+
+RUN groupadd --gid $USER_GID $USERNAME \
+    && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME \
+    && apt-get update \
+    && apt-get install -y sudo \
+    && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
+    && chmod 0440 /etc/sudoers.d/$USERNAME
+
+USER $USERNAME
+
+RUN set -ex; \
+    sudo curl $url -o $sdk_version.zip; \
+    sudo unzip $sdk_version.zip -d /$sdk_version; \
+    sudo rm $sdk_version.zip; \
+    cd /$sdk_version; \
+    sudo yes | ./install.sh; \
+    sudo chmod a+rwx /ursim
+
+CMD ["/bin/bash", "-i"]

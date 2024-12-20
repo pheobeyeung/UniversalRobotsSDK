@@ -1,22 +1,22 @@
 {
-	"name": "UR SDK",
+	"name": "Universal Robots SDK 1.14.0",
 	"build":{"dockerfile": "Dockerfile"},
   	// Use the LOCAL_WORKSPACE_FOLDER environment variable if you need to bind mount local source code into container.
 	"remoteEnv": {
 		"LOCAL_WORKSPACE_FOLDER": "${localWorkspaceFolder}"
 	},
-	 "postStartCommand": "chmod +x newURCap.sh && chmod +x startURSim.sh",
 	 "customizations": {
         // Configure properties specific to VS Code.
         "vscode": {
 			"settings": {
-				"dev.containers.mountWaylandSocket": false
+				"dev.containers.mountWaylandSocket": false,
+				"terminal.integrated.defaultProfile.linux": "bash"
 			},		
           // Add the IDs of extensions you want installed when the container is created.
 			"extensions": ["donjayamanne.python-extension-pack", "ms-python.python", "ms-vscode.cpptools",
 				"redhat.java", "vscjava.vscode-java-debug", "vscjava.vscode-maven", "ahern.urscript",
 				"yzhang.markdown-all-in-one"]
 			}	
-      }
+      },
+	  "postStartCommand": "sudo chmod +x newURCap.sh && chmod +x startURSim.sh"
 }
-
